@@ -10,8 +10,10 @@ const toast = useToast()
 
 const activeTab = ref('open')
 const cancellingId = ref(null)
+const filterSymbol = ref('')
+const filterSide = ref('')
 
-const displayedOrders = computed(() => {
+const filteredByStatus = computed(() => {
   switch (activeTab.value) {
     case 'open':
       return ordersStore.openOrders
@@ -22,6 +24,24 @@ const displayedOrders = computed(() => {
     default:
       return ordersStore.orders
   }
+})
+
+const displayedOrders = computed(() => {
+  let orders = filteredByStatus.value
+
+  if (filterSymbol.value) {
+    orders = orders.filter((o) => o.symbol === filterSymbol.value)
+  }
+
+  if (filterSide.value) {
+    orders = orders.filter((o) => o.side === filterSide.value)
+  }
+
+  return orders
+})
+
+const availableSymbols = computed(() => {
+  return ordersStore.symbols.map((s) => s.symbol)
 })
 
 async function cancelOrder(orderId) {
@@ -112,6 +132,27 @@ function getStatusClass(status) {
       </button>
     </div>
 
+    <!-- Filters -->
+    <div class="flex gap-3 mb-4">
+      <select
+        v-model="filterSymbol"
+        class="flex-1 bg-gray-700 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">All Symbols</option>
+        <option v-for="symbol in availableSymbols" :key="symbol" :value="symbol">
+          {{ symbol }}
+        </option>
+      </select>
+      <select
+        v-model="filterSide"
+        class="flex-1 bg-gray-700 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">All Sides</option>
+        <option value="buy">Buy</option>
+        <option value="sell">Sell</option>
+      </select>
+    </div>
+
     <!-- Orders List -->
     <div class="space-y-3 max-h-96 overflow-y-auto">
       <div
@@ -171,7 +212,8 @@ function getStatusClass(status) {
       </div>
 
       <div v-if="displayedOrders.length === 0" class="text-center text-gray-500 py-8">
-        No orders found
+        <span v-if="filterSymbol || filterSide">No orders match the selected filters</span>
+        <span v-else>No orders found</span>
       </div>
     </div>
   </div>
