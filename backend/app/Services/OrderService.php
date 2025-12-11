@@ -59,6 +59,12 @@ class OrderService
             // Calculate required funds
             $totalValue = bcmul($price, $amount, 8);
 
+            // For buy orders, include the fee in locked funds
+            // Fee is 1.5% of the trade value
+            $feeRate = '0.015';
+            $estimatedFee = $side->isBuy() ? bcmul($totalValue, $feeRate, 8) : '0';
+            $totalWithFee = bcadd($totalValue, $estimatedFee, 8);
+
             // Create order first
             $order = Order::create([
                 'user_id' => $user->id,
@@ -68,7 +74,7 @@ class OrderService
                 'price' => $price,
                 'amount' => $amount,
                 'filled_amount' => '0',
-                'locked_funds' => $side->isBuy() ? $totalValue : $amount,
+                'locked_funds' => $side->isBuy() ? $totalWithFee : $amount,
                 'status' => OrderStatus::OPEN,
                 'client_order_id' => $data['client_order_id'] ?? null,
                 'ip_address' => request()->ip(),
@@ -77,10 +83,10 @@ class OrderService
 
             // Lock funds based on order side
             if ($side->isBuy()) {
-                // Buy order: lock USD
+                // Buy order: lock USD (including estimated fee)
                 $this->balanceService->lockUsdFunds(
                     $user,
-                    $totalValue,
+                    $totalWithFee,
                     $order->id,
                     "Lock USD for buy order #{$order->uuid}"
                 );
@@ -141,13 +147,18 @@ class OrderService
             $remainingAmount = bcsub($order->amount, $order->filled_amount, 8);
 
             if ($order->side->isBuy()) {
-                // Unlock remaining USD
+                // Unlock remaining USD (including fee)
                 $remainingValue = bcmul($order->price, $remainingAmount, 8);
-                if (bccomp($remainingValue, '0', 8) > 0) {
+                // Include the fee that was locked (1.5%)
+                $feeRate = '0.015';
+                $remainingFee = bcmul($remainingValue, $feeRate, 8);
+                $totalToUnlock = bcadd($remainingValue, $remainingFee, 8);
+
+                if (bccomp($totalToUnlock, '0', 8) > 0) {
                     $user = User::find($user->id);
                     $this->balanceService->unlockUsdFunds(
                         $user,
-                        $remainingValue,
+                        $totalToUnlock,
                         $order->id,
                         "Unlock USD for cancelled buy order #{$order->uuid}"
                     );

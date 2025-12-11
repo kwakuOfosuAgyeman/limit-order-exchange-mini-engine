@@ -33,6 +33,7 @@ class CreateOrderRequest extends FormRequest
             'side' => ['required', 'string', Rule::enum(OrderSide::class)],
             'price' => ['required', 'numeric', 'gt:0', 'decimal:0,8'],
             'amount' => ['required', 'numeric', 'gt:0', 'decimal:0,8'],
+            'client_order_id' => ['nullable', 'string', 'max:64'],
         ];
     }
 

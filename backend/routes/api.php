@@ -25,7 +25,8 @@ Route::middleware('throttle:5,1')->group(function () {
 });
 
 // Public orderbook and symbols
-Route::get('/orderbook/{symbol}', [OrderBookController::class, 'show']);
+Route::get('/orderbook/{symbol}', [OrderBookController::class, 'show'])
+    ->where('symbol', '.*');
 Route::get('/symbols', [SymbolController::class, 'index']);
 
 // Protected routes (require authentication)

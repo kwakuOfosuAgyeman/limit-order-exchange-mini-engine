@@ -156,7 +156,10 @@ class MatchingEngine
 
         // If buyer had locked more USD than needed (because buy price > execution price),
         // refund the difference
-        $buyerOriginalLock = bcmul($buyOrder->price, $amount, 8);
+        // Original lock included fee estimate based on order price
+        $buyerOriginalQuote = bcmul($buyOrder->price, $amount, 8);
+        $buyerOriginalFeeEstimate = bcmul($buyerOriginalQuote, self::FEE_RATE, 8);
+        $buyerOriginalLock = bcadd($buyerOriginalQuote, $buyerOriginalFeeEstimate, 8);
         $actualUsed = $totalBuyerPays;
         $refund = bcsub($buyerOriginalLock, $actualUsed, 8);
 

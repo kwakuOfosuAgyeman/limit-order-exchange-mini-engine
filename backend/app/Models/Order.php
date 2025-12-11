@@ -39,7 +39,6 @@ class Order extends Model
         'amount' => 'decimal:8',
         'filled_amount' => 'decimal:8',
         'locked_funds' => 'decimal:8',
-        'remaining_amount' => 'decimal:8',
         'filled_at' => 'datetime',
         'cancelled_at' => 'datetime',
         'expires_at' => 'datetime',
@@ -176,7 +175,7 @@ class Order extends Model
     /**
      * Get the remaining amount to be filled
      */
-    public function getRemainingAmount(): string
+    public function getRemainingAmountAttribute(): string
     {
         return bcsub($this->amount, $this->filled_amount, 8);
     }
