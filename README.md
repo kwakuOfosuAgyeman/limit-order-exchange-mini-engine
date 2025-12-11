@@ -12,6 +12,7 @@ A full-stack limit order exchange system built with Laravel (API) and Vue.js (Fr
 - **Real-time Updates**: Balance and order updates via Pusher
 - **Order Book**: Live buy/sell order display
 - **Order History**: Track open, filled, and cancelled orders
+- **Attack Detection**: Market manipulation detection middleware with throttling
 
 ## Technology Stack
 
@@ -93,6 +94,11 @@ limit-order-exchange-mini-engine/
    PUSHER_APP_KEY=your_key
    PUSHER_APP_SECRET=your_secret
    PUSHER_APP_CLUSTER=mt1
+
+   # Security (optional)
+   ATTACK_DETECTION_ENABLED=true
+   SECURITY_ALERTS_ENABLED=true
+   SECURITY_ADMIN_IDS=1
    ```
 
 5. Generate application key:
@@ -200,9 +206,10 @@ The `OrderMatched` event is broadcast to both buyer and seller on their private 
 
 ### Supporting Tables
 - `symbols` - Trading pairs (BTC, ETH)
-- `fee_tiers` - Commission rates
 - `system_settings` - Application configuration
 - `order_status_history` - Order state changes
+- `security_events` - Attack detection audit log
+- `rate_limit_counters` - Rate limiting counters
 
 ## Concurrency Safety
 
@@ -210,6 +217,31 @@ The `OrderMatched` event is broadcast to both buyer and seller on their private 
 - **Database Transactions**: All balance operations are atomic
 - **Row-level Locks**: `FOR UPDATE` locks during matching
 - **Idempotency Keys**: Prevent duplicate ledger entries
+
+## Security: Attack Detection
+
+The system includes middleware to detect and mitigate market manipulation attacks:
+
+### Detection Types
+| Attack | Detection Logic |
+|--------|-----------------|
+| **Order Spoofing** | Cancel rate > 70%, orders cancelled within 30s |
+| **Layering** | 3+ orders at same price level, batch cancellations |
+| **Wash Trading** | Trades between accounts sharing same IP |
+| **Price Manipulation** | Order price deviates > 5% from market price |
+| **Rapid-Fire Spam** | > 30 orders/min or > 5 requests/sec |
+
+### Response Actions
+- **Low severity**: 500ms throttle delay
+- **Medium severity**: 2s throttle delay + admin alert
+- **High severity**: 5s throttle delay + admin alert
+- **Critical severity**: Request blocked (429 response)
+
+### Configuration
+Attack detection can be configured in `config/attack_detection.php` or disabled via environment:
+```env
+ATTACK_DETECTION_ENABLED=false
+```
 
 ## License
 
