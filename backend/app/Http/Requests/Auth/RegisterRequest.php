@@ -24,7 +24,24 @@ class RegisterRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email', 'max:255'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => [
+                'required',
+                'string',
+                'min:12',
+                'confirmed',
+                'regex:/[a-z]/',      // At least one lowercase letter
+                'regex:/[A-Z]/',      // At least one uppercase letter
+                'regex:/[0-9]/',      // At least one digit
+                'regex:/[@$!%*#?&]/', // At least one special character
+            ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'password.min' => 'Password must be at least 12 characters.',
+            'password.regex' => 'Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character (@$!%*#?&).',
         ];
     }
 }

@@ -18,9 +18,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Public routes
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+// Public routes with rate limiting for security
+Route::middleware('throttle:5,1')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+});
 
 // Public orderbook and symbols
 Route::get('/orderbook/{symbol}', [OrderBookController::class, 'show']);
