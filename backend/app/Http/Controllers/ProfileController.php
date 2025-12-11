@@ -13,7 +13,7 @@ class ProfileController extends Controller
      */
     public function show(Request $request): JsonResponse
     {
-        $user = $request->user()->load(['assets', 'feeTier']);
+        $user = $request->user()->load(['assets']);
 
         return response()->json([
             'user' => new UserResource($user),

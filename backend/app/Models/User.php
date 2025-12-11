@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -26,7 +25,6 @@ class User extends Authenticatable
         'password',
         'balance',
         'locked_balance',
-        'fee_tier_id',
         'is_active',
         'suspended_at',
         'suspension_reason',
@@ -69,14 +67,6 @@ class User extends Authenticatable
             'last_security_event_at' => 'datetime',
             'security_review_required' => 'boolean',
         ];
-    }
-
-    /**
-     * Get the fee tier associated with the user.
-     */
-    public function feeTier(): BelongsTo
-    {
-        return $this->belongsTo(FeeTier::class);
     }
 
     /**

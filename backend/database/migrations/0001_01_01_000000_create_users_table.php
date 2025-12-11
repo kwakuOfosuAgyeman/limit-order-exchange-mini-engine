@@ -29,9 +29,6 @@ return new class extends Migration
             $table->decimal('locked_balance', 18, 8)->default(0)
                 ->comment('USD reserved for open buy orders');
 
-            // Tier system for commission rates
-            $table->unsignedBigInteger('fee_tier_id')->nullable();
-
             // Optimistic locking for race condition detection
             $table->unsignedInteger('version')->default(1)
                 ->comment('Incremented on every balance change for optimistic locking');
@@ -46,7 +43,6 @@ return new class extends Migration
             $table->softDeletes();
 
             // Indexes
-            $table->index('fee_tier_id', 'idx_users_fee_tier');
             $table->index(['is_active', 'deleted_at'], 'idx_users_active');
         });
 

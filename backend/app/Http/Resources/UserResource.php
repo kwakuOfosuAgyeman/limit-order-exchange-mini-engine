@@ -23,11 +23,6 @@ class UserResource extends JsonResource
             'total_balance' => $this->total_balance,
             'is_active' => $this->is_active,
             'can_trade' => $this->canTrade(),
-            'fee_tier' => $this->whenLoaded('feeTier', fn() => [
-                'name' => $this->feeTier->name,
-                'maker_fee_rate' => $this->feeTier->maker_fee_rate,
-                'taker_fee_rate' => $this->feeTier->taker_fee_rate,
-            ]),
             'assets' => AssetResource::collection($this->whenLoaded('assets')),
             'created_at' => $this->created_at,
         ];

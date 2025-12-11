@@ -69,7 +69,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login successful',
-            'user' => new UserResource($user->load('assets', 'feeTier')),
+            'user' => new UserResource($user->load('assets')),
             'token' => $token,
         ]);
     }
