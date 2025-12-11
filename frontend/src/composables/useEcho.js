@@ -3,6 +3,7 @@ import Echo from 'laravel-echo'
 import Pusher from 'pusher-js'
 import { useAuthStore } from '@/stores/auth'
 import { useOrdersStore } from '@/stores/orders'
+import { useToast } from '@/composables/useToast'
 
 // Make Pusher available globally for Laravel Echo
 window.Pusher = Pusher
@@ -19,6 +20,7 @@ export function useEcho() {
   const connected = ref(false)
   const authStore = useAuthStore()
   const ordersStore = useOrdersStore()
+  const toast = useToast()
 
   function initEcho() {
     if (echoInstance) {
@@ -67,6 +69,18 @@ export function useEcho() {
 
         // Refresh orders list
         ordersStore.fetchOrders()
+
+        // Show toast notification
+        const trade = event.trade
+        const action = isBuyer ? 'Bought' : 'Sold'
+        const symbol = trade.symbol?.replace('/USD', '') || 'Asset'
+        const amount = parseFloat(trade.amount).toFixed(8)
+        const price = parseFloat(trade.price).toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+
+        toast.success(`${action} ${amount} ${symbol} @ $${price}`)
       })
 
     connected.value = true

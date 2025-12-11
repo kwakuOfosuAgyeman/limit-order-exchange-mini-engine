@@ -2,15 +2,16 @@
 import { ref, computed, watch } from 'vue'
 import { useOrdersStore } from '@/stores/orders'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
 
 const ordersStore = useOrdersStore()
 const authStore = useAuthStore()
+const toast = useToast()
 
 const side = ref('buy')
 const price = ref('')
 const amount = ref('')
 const error = ref('')
-const success = ref('')
 const loading = ref(false)
 
 const selectedSymbol = computed(() => ordersStore.selectedSymbol)
@@ -38,7 +39,6 @@ watch(selectedSymbol, () => {
 
 async function handleSubmit() {
   error.value = ''
-  success.value = ''
   loading.value = true
 
   try {
@@ -48,7 +48,12 @@ async function handleSubmit() {
       price.value,
       amount.value
     )
-    success.value = `Order created successfully!`
+
+    // Show toast notification
+    const action = side.value === 'buy' ? 'Buy' : 'Sell'
+    const status = result.order?.status === 'filled' ? 'filled' : 'placed'
+    toast.success(`${action} order ${status} for ${amount.value} ${selectedSymbol.value}`)
+
     price.value = ''
     amount.value = ''
 
@@ -58,7 +63,9 @@ async function handleSubmit() {
       ordersStore.fetchOrderBook(selectedSymbol.value),
     ])
   } catch (err) {
-    error.value = err.response?.data?.message || 'Failed to create order'
+    const message = err.response?.data?.message || 'Failed to create order'
+    error.value = message
+    toast.error(message)
   } finally {
     loading.value = false
   }
@@ -123,12 +130,9 @@ function setSymbol(symbol) {
     </div>
 
     <form @submit.prevent="handleSubmit" class="space-y-4">
-      <!-- Error/Success Messages -->
+      <!-- Error Message -->
       <div v-if="error" class="bg-red-500/10 border border-red-500 text-red-400 px-3 py-2 rounded text-sm">
         {{ error }}
-      </div>
-      <div v-if="success" class="bg-green-500/10 border border-green-500 text-green-400 px-3 py-2 rounded text-sm">
-        {{ success }}
       </div>
 
       <!-- Price Input -->

@@ -2,9 +2,11 @@
 import { ref, computed } from 'vue'
 import { useOrdersStore } from '@/stores/orders'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
 
 const ordersStore = useOrdersStore()
 const authStore = useAuthStore()
+const toast = useToast()
 
 const activeTab = ref('open')
 const cancellingId = ref(null)
@@ -25,9 +27,12 @@ const displayedOrders = computed(() => {
 async function cancelOrder(orderId) {
   cancellingId.value = orderId
   try {
-    await ordersStore.cancelOrder(orderId)
+    const result = await ordersStore.cancelOrder(orderId)
     await authStore.fetchProfile()
+    toast.success('Order cancelled successfully')
   } catch (err) {
+    const message = err.response?.data?.message || 'Failed to cancel order'
+    toast.error(message)
     console.error('Failed to cancel order:', err)
   } finally {
     cancellingId.value = null
