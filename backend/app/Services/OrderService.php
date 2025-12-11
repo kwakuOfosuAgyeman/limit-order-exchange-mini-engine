@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\OrderSide;
 use App\Enums\OrderStatus;
+use App\Events\OrderBookUpdated;
 use App\Exceptions\InsufficientBalanceException;
 use App\Exceptions\OrderException;
 use App\Models\Order;
@@ -100,6 +101,10 @@ class OrderService
             // Refresh order to get updated status
             $order->refresh();
 
+            // Broadcast orderbook update (extract base symbol from pair)
+            $baseSymbol = explode('/', $symbol->symbol)[0];
+            event(new OrderBookUpdated($baseSymbol));
+
             return $order;
         });
     }
@@ -165,6 +170,10 @@ class OrderService
             $order->status = OrderStatus::CANCELLED;
             $order->cancelled_at = now();
             $order->save();
+
+            // Broadcast orderbook update (extract base symbol from pair)
+            $baseSymbol = explode('/', $order->symbol)[0];
+            event(new OrderBookUpdated($baseSymbol));
 
             return $order;
         });

@@ -1,10 +1,12 @@
 <script setup>
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useOrdersStore } from '@/stores/orders'
+import { useEcho } from '@/composables/useEcho'
 
 const ordersStore = useOrdersStore()
 
-let refreshInterval = null
+// Initialize WebSocket connection for real-time updates
+useEcho()
 
 const bids = computed(() => ordersStore.orderBook.bids || [])
 const asks = computed(() => ordersStore.orderBook.asks || [])
@@ -21,16 +23,8 @@ function formatAmount(amount) {
 }
 
 onMounted(() => {
-  // Refresh orderbook every 5 seconds
-  refreshInterval = setInterval(() => {
-    ordersStore.fetchOrderBook(ordersStore.selectedSymbol)
-  }, 5000)
-})
-
-onUnmounted(() => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval)
-  }
+  // Fetch initial orderbook data (WebSocket will handle updates)
+  ordersStore.fetchOrderBook(ordersStore.selectedSymbol)
 })
 </script>
 

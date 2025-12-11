@@ -111,6 +111,14 @@ export const useOrdersStore = defineStore('orders', () => {
     }
   }
 
+  function updateOrderBook(data) {
+    // Update orderbook from WebSocket event
+    orderBook.value = {
+      bids: data.bids || [],
+      asks: data.asks || [],
+    }
+  }
+
   function setSelectedSymbol(symbol) {
     selectedSymbol.value = symbol
   }
@@ -133,6 +141,7 @@ export const useOrdersStore = defineStore('orders', () => {
     fetchTrades,
     fetchSymbols,
     updateOrderStatus,
+    updateOrderBook,
     setSelectedSymbol,
   }
 })
