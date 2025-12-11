@@ -2,14 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class Trade extends Model
 {
     use HasFactory;
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function (Trade $trade) {
+            if (empty($trade->uuid)) {
+                $trade->uuid = (string) Str::uuid();
+            }
+        });
+    }
 
     /**
      * Indicates if the model should be timestamped.

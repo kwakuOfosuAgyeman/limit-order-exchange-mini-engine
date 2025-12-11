@@ -28,6 +28,8 @@ class Order extends Model
         'ip_address',
         'user_agent',
         'expires_at',
+        'cancelled_at',
+        'filled_at',
     ];
 
     protected $casts = [

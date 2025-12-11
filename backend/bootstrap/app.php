@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AttackDetectionMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,7 +14,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Register attack detection middleware alias
+        $middleware->alias([
+            'attack.detection' => AttackDetectionMiddleware::class,
+        ]);
+
+        // Add attack detection to API middleware group
+        $middleware->api(prepend: [
+            AttackDetectionMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

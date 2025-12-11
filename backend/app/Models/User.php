@@ -30,6 +30,11 @@ class User extends Authenticatable
         'is_active',
         'suspended_at',
         'suspension_reason',
+        'risk_score',
+        'risk_score_updated_at',
+        'security_event_count',
+        'last_security_event_at',
+        'security_review_required',
     ];
 
     /**
@@ -58,6 +63,11 @@ class User extends Authenticatable
             'is_active' => 'boolean',
             'suspended_at' => 'datetime',
             'version' => 'integer',
+            'risk_score' => 'decimal:2',
+            'risk_score_updated_at' => 'datetime',
+            'security_event_count' => 'integer',
+            'last_security_event_at' => 'datetime',
+            'security_review_required' => 'boolean',
         ];
     }
 

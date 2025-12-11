@@ -22,3 +22,14 @@ Broadcast::channel('user.{id}', function ($user, $id) {
 Broadcast::channel('orderbook.{symbol}', function () {
     return true;
 });
+
+// Security alerts channel (admin only)
+Broadcast::channel('security-alerts', function ($user) {
+    return in_array($user->id, config('attack_detection.alerts.admin_user_ids'));
+});
+
+// Individual admin security channel
+Broadcast::channel('admin.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id &&
+           in_array($user->id, config('attack_detection.alerts.admin_user_ids'));
+});
